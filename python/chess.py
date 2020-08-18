@@ -18,6 +18,21 @@ class Piece(ABC):
         self.col = col
         self.team = team
 
+    def getMoveset(self, board, sections):
+        moveset = set()
+
+        for section in sections:
+            newSection = set(takewhile(lambda x: board[x] is None, section[1:]))
+ 
+            if(len(newSection) < len(section) - 1):
+                firstDroppedInd = section[len(newSection) + 1]
+                firstDropped = board[firstDroppedInd]
+
+                if(firstDropped is not None and not firstDropped.isTeam(self.team)):
+                    newSection.add(firstDroppedInd)
+            moveset = moveset.union(newSection)
+        return moveset
+
     def display(self, a):
         return (a.upper() if self.team == Team.WHITE else a.lower())
 
