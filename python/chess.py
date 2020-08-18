@@ -38,3 +38,15 @@ class Piece(ABC):
 
     def isTeam(self, team):
         return self.team == team
+class Rook(Piece):
+    def getMoveset(self, board):
+        sections = [
+            indBoard[self.row, self.col:],
+            indBoard[self.row, self.col::-1],
+            indBoard[self.row:, self.col],
+            indBoard[self.row::-1, self.col]
+        ]
+        return super().getMoveset(board, sections)
+    
+    def __str__(self):
+        return super().display('r')
