@@ -85,3 +85,34 @@ class Queen(Piece):
     def __repr__(self):
         return super().display('q')
 
+class Pawn(Piece):
+    def getMoveset(self, board):
+        moveset = set()
+
+        moveForwardOneInd = (self.row, self.col + self.getDirection())
+        if board[moveForwardOneInd] is None:
+            moveset.add(indBoard[moveForwardOneInd])
+            
+            moveForwardTwoInd = (self.row, self.col + self.getDirection() * 2)
+            if self.canLongMove() and board[moveForwardTwoInd] is None:
+                moveset.add(indBoard[moveForwardTwoInd])
+
+        upperDiagonalInd = (self.row-1,self.col+self.getDirection())
+        lowerDiagonalInd = (self.row+1,self.col+self.getDirection())
+
+        for ind in [upperDiagonalInd, lowerDiagonalInd]:
+            if not self.isEnemyPiece(board[ind]):
+                moveset.add(indBoard[ind])
+        return moveset
+    
+    def __repr__(self):
+        return super().display('p')
+    
+    def getDirection(self):
+        return 1 if self.team == Team.WHITE else -1
+    
+    def canLongMove(self):
+        return True if self.team == Team.WHITE and self.col == 1 or self.team == Team.BLACK and self.col == 6 else False
+
+    def isEnemyPiece(self, piece):
+        return piece is not None and self.team != piece.team
