@@ -53,6 +53,14 @@ def getOrthogonalSections(row, col):
         indBoard[row::-1, col]
     ]
 
+def getDiagonalSections(row, col):
+    return [
+        indBoard[row:, col:].diagonal(),
+        indBoard[row::-1, col::-1].diagonal(),
+        np.fliplr(indBoard)[row:,7-col:].diagonal(),
+        np.fliplr(indBoard)[row::-1,7-col::-1].diagonal(),
+    ]
+
 class Rook(Piece):
     def getMoveset(self, board):
         sections = getOrthogonalSections(self.row, self.col)
@@ -60,3 +68,20 @@ class Rook(Piece):
     
     def __repr__(self):
         return super().display('r')
+
+class Bishop(Piece):
+    def getMoveset(self, board):
+        sections = getDiagonalSections(self.row, self.col)
+        return super().getMoveset(board, sections)
+    
+    def __repr__(self):
+        return super().display('b')
+
+class Queen(Piece):
+    def getMoveset(self, board):
+        sections = getOrthogonalSections(self.row, self.col) + getDiagonalSections(self.row, self.col)
+        return super().getMoveset(board, sections)
+    
+    def __repr__(self):
+        return super().display('q')
+
