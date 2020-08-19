@@ -38,15 +38,25 @@ class Piece(ABC):
 
     def isTeam(self, team):
         return self.team == team
+
+    def canMoveTo(self, move, board ):
+        if not (0 <= move[0] < 8 and 0 <= move[1] < 8): return False
+
+        piece = board[move]
+        return piece is None or not piece.isTeam(self.team)
+
+def getOrthogonalSections(row, col):
+    return [
+        indBoard[row, col:],
+        indBoard[row, col::-1],
+        indBoard[row:, col],
+        indBoard[row::-1, col]
+    ]
+
 class Rook(Piece):
     def getMoveset(self, board):
-        sections = [
-            indBoard[self.row, self.col:],
-            indBoard[self.row, self.col::-1],
-            indBoard[self.row:, self.col],
-            indBoard[self.row::-1, self.col]
-        ]
+        sections = getOrthogonalSections(self.row, self.col)
         return super().getMoveset(board, sections)
     
-    def __str__(self):
+    def __repr__(self):
         return super().display('r')
