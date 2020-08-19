@@ -44,6 +44,9 @@ class Piece(ABC):
 
         piece = board[move]
         return piece is None or not piece.isTeam(self.team)
+    
+    def getDirection(self):
+        return 1 if self.team == Team.WHITE else -1
 
 def getOrthogonalSections(row, col):
     return [
@@ -108,9 +111,6 @@ class Pawn(Piece):
     def __repr__(self):
         return super().display('p')
     
-    def getDirection(self):
-        return 1 if self.team == Team.WHITE else -1
-    
     def canLongMove(self):
         return True if self.team == Team.WHITE and self.col == 1 or self.team == Team.BLACK and self.col == 6 else False
 
@@ -131,6 +131,28 @@ class King(Piece):
         spaces = [0,1,-1]
         return { (x + self.row, y + self.col) for x in spaces for y in spaces if not x == y == 0
             and self.canMoveTo((x + self.row, y + self.col), board)}
+    
+    def isChecked(self, board):
+        for attack in [(self.row-1,self.col+self.getDirection()), (self.row+1,self.col+self.getDirection())]:
+            if isinstance(board[attack], Pawn) and not board[attack].isTeam(self.team):
+                return True
+
+        for attack in Knight.getMoveset(self, board):
+            if isinstance(board[attack], Knight) and not board[attack].isTeam(self.team):
+                return True
+
+        for arr in getOrthogonalSections(self.row, self.col):
+            if self.threatenedOnSequence(arr, board):
+                return True
+        for arr in getDiagonalSections(self.row, self.col):
+            if self.threatenedOnSequence(arr, board, orth=False):
+                return True
+        return False
+    
+    def threatenedOnSequence(self, seq, board, orth=True):
+        for e in seq[1:]:
+            if board[e] is None: continue
+            return not board[e].isTeam(self.team) and (isinstance(board[e], (Rook if orth else Bishop)) or isinstance(board[e], Queen))
     
     def __repr__(self):
         return super().display('k')
