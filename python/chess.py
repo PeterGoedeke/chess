@@ -116,3 +116,21 @@ class Pawn(Piece):
 
     def isEnemyPiece(self, piece):
         return piece is not None and self.team != piece.team
+
+class Knight(Piece):
+    def getMoveset(self, board):
+        spaces = [1,-1,2,-2]
+        return { (x + self.row, y + self.col) for x in spaces for y in spaces if abs(x) != abs(y)
+            and self.canMoveTo((x + self.row, y + self.col), board) }
+
+    def __repr__(self):
+        return super().display('n')
+
+class King(Piece):
+    def getMoveset(self, board):
+        spaces = [0,1,-1]
+        return { (x + self.row, y + self.col) for x in spaces for y in spaces if not x == y == 0
+            and self.canMoveTo((x + self.row, y + self.col), board)}
+    
+    def __repr__(self):
+        return super().display('k')
