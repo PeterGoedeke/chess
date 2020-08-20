@@ -156,3 +156,10 @@ class King(Piece):
     
     def __repr__(self):
         return super().display('k')
+def getPrintableBoard(board):
+    return np.array([list(map(lambda x: 0 if x is None else x, subboard)) for subboard in board])
+
+def getPrintableBoardWithPossibleMoves(board, row, col):
+    printableBoard = getPrintableBoard(board)
+    for move in board[row, col].getMoveset(board):
+        printableBoard[move] = Hit() if printableBoard[move] == 0 else (printableBoard[move])
