@@ -158,6 +158,18 @@ class King(Piece):
     
     def __repr__(self):
         return super().display('k')
+
+initialBoard = np.array([
+    [ Rook(Team.WHITE), Pawn(Team.WHITE) ] + [None] * 4 + [ Pawn(Team.BLACK), Rook(Team.BLACK) ],
+    [ Knight(Team.WHITE), Pawn(Team.WHITE) ] + [None] * 4 + [ Pawn(Team.BLACK), Knight(Team.BLACK) ],
+    [ Bishop(Team.WHITE), Pawn(Team.WHITE) ] + [None] * 4 + [ Pawn(Team.BLACK), Bishop(Team.BLACK) ],
+    [ Queen(Team.WHITE), Pawn(Team.WHITE) ] + [None] * 4 + [ Pawn(Team.BLACK), Queen(Team.BLACK) ],
+    [ King(Team.WHITE), Knight(Team.WHITE) ] + [None] * 4 + [ Rook(Team.BLACK), King(Team.BLACK) ],
+    [ Bishop(Team.WHITE), Pawn(Team.WHITE) ] + [None] * 4 + [ Pawn(Team.BLACK), Bishop(Team.BLACK) ],
+    [ Knight(Team.WHITE), Pawn(Team.WHITE) ] + [None] * 4 + [ Pawn(Team.BLACK), Knight(Team.BLACK) ],
+    [ Rook(Team.WHITE), Pawn(Team.WHITE) ] + [None] * 4 + [ Pawn(Team.BLACK), Rook(Team.BLACK) ],
+])
+
 class Hit():
     def __repr__(self):
         return 'x'
@@ -225,3 +237,5 @@ class Game:
             return result
         else: raise Exception('Parse error.')
 
+game = Game(initialBoard)
+game.step()
