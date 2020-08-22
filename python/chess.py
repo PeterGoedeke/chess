@@ -13,9 +13,7 @@ class Team(Enum):
     BLACK = 2
 
 class Piece(ABC):
-    def __init__(self, row, col, team):
-        self.row = row
-        self.col = col
+    def __init__(self, team):
         self.team = team
 
     def getMoveset(self, board, sections):
@@ -39,7 +37,7 @@ class Piece(ABC):
     def isTeam(self, team):
         return self.team == team
 
-    def canMoveTo(self, move, board ):
+    def canMoveTo(self, move, board):
         if not (0 <= move[0] < 8 and 0 <= move[1] < 8): return False
 
         piece = board[move]
@@ -65,43 +63,43 @@ def getDiagonalSections(row, col):
     ]
 
 class Rook(Piece):
-    def getMoveset(self, board):
-        sections = getOrthogonalSections(self.row, self.col)
+    def getMoveset(self, board, row, col):
+        sections = getOrthogonalSections(row, col)
         return super().getMoveset(board, sections)
     
     def __repr__(self):
         return super().display('r')
 
 class Bishop(Piece):
-    def getMoveset(self, board):
-        sections = getDiagonalSections(self.row, self.col)
+    def getMoveset(self, board, row, col):
+        sections = getDiagonalSections(row, col)
         return super().getMoveset(board, sections)
     
     def __repr__(self):
         return super().display('b')
 
 class Queen(Piece):
-    def getMoveset(self, board):
-        sections = getOrthogonalSections(self.row, self.col) + getDiagonalSections(self.row, self.col)
+    def getMoveset(self, board, row, col):
+        sections = getOrthogonalSections(row, col) + getDiagonalSections(row, col)
         return super().getMoveset(board, sections)
     
     def __repr__(self):
         return super().display('q')
 
 class Pawn(Piece):
-    def getMoveset(self, board):
+    def getMoveset(self, board, row, col):
         moveset = set()
 
-        moveForwardOneInd = (self.row, self.col + self.getDirection())
+        moveForwardOneInd = (row, col + self.getDirection())
         if board[moveForwardOneInd] is None:
             moveset.add(indBoard[moveForwardOneInd])
             
-            moveForwardTwoInd = (self.row, self.col + self.getDirection() * 2)
-            if self.canLongMove() and board[moveForwardTwoInd] is None:
+            moveForwardTwoInd = (row, col + self.getDirection() * 2)
+            if self.canLongMove(row, col) and board[moveForwardTwoInd] is None:
                 moveset.add(indBoard[moveForwardTwoInd])
 
-        upperDiagonalInd = (self.row-1,self.col+self.getDirection())
-        lowerDiagonalInd = (self.row+1,self.col+self.getDirection())
+        upperDiagonalInd = (row-1,col+self.getDirection())
+        lowerDiagonalInd = (row+1,col+self.getDirection())
 
         for ind in [upperDiagonalInd, lowerDiagonalInd]:
             if not self.isEnemyPiece(board[ind]):
@@ -111,40 +109,40 @@ class Pawn(Piece):
     def __repr__(self):
         return super().display('p')
     
-    def canLongMove(self):
-        return True if self.team == Team.WHITE and self.col == 1 or self.team == Team.BLACK and self.col == 6 else False
+    def canLongMove(self, row, col):
+        return True if self.team == Team.WHITE and col == 1 or self.team == Team.BLACK and col == 6 else False
 
     def isEnemyPiece(self, piece):
         return piece is not None and self.team != piece.team
 
 class Knight(Piece):
-    def getMoveset(self, board):
+    def getMoveset(self, board, row, col):
         spaces = [1,-1,2,-2]
-        return { (x + self.row, y + self.col) for x in spaces for y in spaces if abs(x) != abs(y)
-            and self.canMoveTo((x + self.row, y + self.col), board) }
+        return { (x + row, y + col) for x in spaces for y in spaces if abs(x) != abs(y)
+            and self.canMoveTo((x + row, y + col), board) }
 
     def __repr__(self):
         return super().display('n')
 
 class King(Piece):
-    def getMoveset(self, board):
+    def getMoveset(self, board, row, col):
         spaces = [0,1,-1]
-        return { (x + self.row, y + self.col) for x in spaces for y in spaces if not x == y == 0
-            and self.canMoveTo((x + self.row, y + self.col), board)}
+        return { (x + row, y + col) for x in spaces for y in spaces if not x == y == 0
+            and self.canMoveTo((x + row, y + col), board)}
     
-    def isChecked(self, board):
-        for attack in [(self.row-1,self.col+self.getDirection()), (self.row+1,self.col+self.getDirection())]:
+    def isChecked(self, board, row, col):
+        for attack in [(row-1,col+self.getDirection()), (row+1,col+self.getDirection())]:
             if isinstance(board[attack], Pawn) and not board[attack].isTeam(self.team):
                 return True
 
-        for attack in Knight.getMoveset(self, board):
+        for attack in Knight.getMoveset(self, board, row, col):
             if isinstance(board[attack], Knight) and not board[attack].isTeam(self.team):
                 return True
 
-        for arr in getOrthogonalSections(self.row, self.col):
+        for arr in getOrthogonalSections(row, col):
             if self.threatenedOnSequence(arr, board):
                 return True
-        for arr in getDiagonalSections(self.row, self.col):
+        for arr in getDiagonalSections(row, col):
             if self.threatenedOnSequence(arr, board, orth=False):
                 return True
         return False
