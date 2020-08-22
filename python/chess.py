@@ -2,6 +2,7 @@ import numpy as np
 from enum import Enum
 from abc import ABC, abstractmethod
 from itertools import takewhile
+import os
 
 indBoardArr = [(x,y) for x in range(8) for y in range(8)]
 indBoard = np.empty(len(indBoardArr), dtype=object)
@@ -11,6 +12,9 @@ indBoard.shape = 8,8
 class Team(Enum):
     WHITE = 1
     BLACK = 2
+
+def otherTeam(team):
+    return Team.WHITE if team == Team.BLACK else Team.BLACK
 
 class Piece(ABC):
     def __init__(self, team):
@@ -154,6 +158,11 @@ class King(Piece):
     
     def __repr__(self):
         return super().display('k')
+class Hit():
+    def __repr__(self):
+        return 'x'
+
+
 def getPrintableBoard(board):
     return np.array([list(map(lambda x: 0 if x is None else x, subboard)) for subboard in board])
 
@@ -161,3 +170,58 @@ def getPrintableBoardWithPossibleMoves(board, row, col):
     printableBoard = getPrintableBoard(board)
     for move in board[row, col].getMoveset(board):
         printableBoard[move] = Hit() if printableBoard[move] == 0 else (printableBoard[move])
+
+class Game:
+    def __init__(self, board):
+        self.board = board
+        self.teamMoving = Team.WHITE
+        self.whiteKing = board[4,0]
+        self.blackKing = board[4,7]
+
+    def step(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print(getPrintableBoard(self.board))
+        print(self.teamMoving)
+        moveStr = input("Enter a valid move\n")
+        try:
+            move = self.parseUserMove(moveStr)
+        except:
+            return self.step()
+        
+        pieceToMove = self.board[move[0]]
+        print(pieceToMove)
+
+        if pieceToMove is None or not pieceToMove.isTeam(self.teamMoving):
+            return self.step()
+        
+        if move[1] in pieceToMove.getMoveset(self.board, *move[0]):
+            erasedSquare = self.board[move[1]]
+            self.applyMove(move[0], move[1])
+            print(self.kingOfMovingTeam().isChecked(self.board, *move[1]))
+            kingLocation = np.where(self.board == self.kingOfMovingTeam())
+            kingLocation = tuple((kingLocation[0][0], kingLocation[1][0]))
+
+            if self.kingOfMovingTeam().isChecked(self.board, *kingLocation):
+                self.board[move[0]] = self.board[move[1]]
+                self.board[move[1]] = erasedSquare
+                return self.step()
+
+            self.teamMoving = otherTeam(self.teamMoving)
+
+        input()
+        # check whether the game is over
+        return self.step()
+
+    def applyMove(self, p1, p2):
+        self.board[p2] = self.board[p1]
+        self.board[p1] = None
+
+    def kingOfMovingTeam(self):
+        return self.whiteKing if self.teamMoving == Team.WHITE else self.blackKing
+
+    def parseUserMove(self, str):
+        result = tuple(map(lambda x: tuple(map(int, x.strip().split(' '))), str.split(',')))
+        if len(result) == 2 and all(len(e) == 2 for e in result):
+            return result
+        else: raise Exception('Parse error.')
+
